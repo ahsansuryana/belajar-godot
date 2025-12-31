@@ -1,0 +1,116 @@
+[gd_scene load_steps=17 format=3 uid="uid://xk2so2kw48vs"]
+
+[ext_resource type="Texture2D" uid="uid://dqrnm214gqa8" path="res://Enemies/Bat.png" id="1_3ih25"]
+[ext_resource type="Script" uid="uid://cyw15enpagipm" path="res://Enemies/enemy.gd" id="1_572h1"]
+[ext_resource type="Script" uid="uid://t7a83mr5m2v" path="res://HurtBox.gd" id="2_47qgu"]
+[ext_resource type="Texture2D" uid="uid://rhd8div40k7v" path="res://Shadows/SmallShadow.png" id="3_572h1"]
+
+[sub_resource type="Animation" id="Animation_bxkaj"]
+resource_name = "fly"
+length = 0.5
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4]
+}
+
+[sub_resource type="Animation" id="Animation_47qgu"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_572h1"]
+_data = {
+&"RESET": SubResource("Animation_47qgu"),
+&"fly": SubResource("Animation_bxkaj")
+}
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_47qgu"]
+animation = &"fly"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_rt1x0"]
+animation = &"fly"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_8wvsg"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_572h1"]
+advance_mode = 2
+advance_expression = "is_player_in_range()"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_rt1x0"]
+advance_mode = 2
+advance_expression = "not is_player_in_range()"
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_gk8ng"]
+states/ChaseState/node = SubResource("AnimationNodeAnimation_47qgu")
+states/ChaseState/position = Vector2(320, 176.66667)
+states/IdleState/node = SubResource("AnimationNodeAnimation_rt1x0")
+states/IdleState/position = Vector2(328, 99.333336)
+transitions = ["Start", "IdleState", SubResource("AnimationNodeStateMachineTransition_8wvsg"), "IdleState", "ChaseState", SubResource("AnimationNodeStateMachineTransition_572h1"), "ChaseState", "IdleState", SubResource("AnimationNodeStateMachineTransition_rt1x0")]
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_4o6mh"]
+nodes/output/position = Vector2(453.33334, 133.33333)
+nodes/StateMachine/node = SubResource("AnimationNodeStateMachine_gk8ng")
+nodes/StateMachine/position = Vector2(133.33333, 80)
+node_connections = [&"output", 0, &"StateMachine"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rt1x0"]
+radius = 3.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_8wvsg"]
+radius = 5.0
+
+[node name="Enemy" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_572h1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -6)
+texture = ExtResource("1_3ih25")
+hframes = 5
+
+[node name="ShadowSprite2D" type="Sprite2D" parent="."]
+show_behind_parent = true
+texture = ExtResource("3_572h1")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_572h1")
+}
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+tree_root = SubResource("AnimationNodeBlendTree_4o6mh")
+advance_expression_base_node = NodePath("..")
+anim_player = NodePath("../AnimationPlayer")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_rt1x0")
+
+[node name="HurtBox" type="Area2D" parent="."]
+script = ExtResource("2_47qgu")
+metadata/_custom_type_script = "uid://t7a83mr5m2v"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox"]
+position = Vector2(0, -3)
+shape = SubResource("CircleShape2D_8wvsg")
+debug_color = Color(0.97950476, 0, 0.39136422, 0.41960785)
