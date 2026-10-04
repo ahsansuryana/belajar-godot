@@ -18,7 +18,7 @@ func _physics_process(delta: float) -> void:
 	match state:
 		"IdleState" : pass
 		"ChaseState" : 
-			var player = get_palyer()
+			var player = get_player()
 			if player is Player:
 				velocity = global_position.direction_to(player.global_position) * speed
 				sprite_2d.scale.x =  sign(velocity.x)
@@ -26,12 +26,12 @@ func _physics_process(delta: float) -> void:
 				velocity = Vector2.ZERO
 			move_and_slide()
 
-func get_palyer() -> Player:
+func get_player() -> Player:
 	return get_tree().get_first_node_in_group("player")
 
 func is_player_in_range() -> bool:
 	var result = false
-	var player = get_palyer()
+	var player = get_player()
 	if player is Player:
 		var player_distance = global_position.distance_to(player.global_position)
 		if player_distance < max_range:
@@ -40,7 +40,7 @@ func is_player_in_range() -> bool:
 
 func can_see_player() -> bool:
 	if not is_player_in_range(): return false
-	var player = get_palyer()
+	var player = get_player()
 	ray_cast_2d.target_position = player.global_position - global_position
 	ray_cast_2d.force_raycast_update()
 	var has_los_to_player: = not ray_cast_2d.is_colliding()
